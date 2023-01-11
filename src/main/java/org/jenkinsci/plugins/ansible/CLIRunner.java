@@ -42,6 +42,8 @@ public class CLIRunner
     public boolean execute(ArgumentListBuilder args, Map<String, String> environment)
             throws IOException, InterruptedException
     {
+        ws.mkdirs();
+        
         return launcher.launch()
                 .pwd(ws)
                 .envs(environment)
