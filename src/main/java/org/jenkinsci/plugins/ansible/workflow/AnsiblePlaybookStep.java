@@ -38,6 +38,7 @@ import hudson.model.Project;
 import hudson.model.Run;
 import hudson.model.TaskListener;
 import hudson.util.ListBoxModel;
+import hudson.util.Secret;
 import jenkins.model.Jenkins;
 import org.apache.commons.lang.StringUtils;
 import org.jenkinsci.plugins.ansible.AnsibleInstallation;
@@ -377,17 +378,22 @@ public class AnsiblePlaybookStep extends AbstractStepImpl {
             if (extraVars == null) {
                 return null;
             }
-            List<ExtraVar> extraVarList = new ArrayList<ExtraVar>();
+            List<ExtraVar> extraVarList = new ArrayList<>();
             for (Map.Entry<String, Object> entry: extraVars.entrySet()) {
                 ExtraVar var = new ExtraVar();
                 var.setKey(entry.getKey());
                 Object o = entry.getValue();
                 if (o instanceof Map) {
-                    var.setValue(((Map)o).get("value").toString());
+                    var.setSecretValue(Secret.fromString((String)((Map)o).get("value")));
                     var.setHidden((Boolean)((Map)o).get("hidden"));
-                } else {
-                    var.setValue(o.toString());
-                    var.setHidden(false);
+                }
+                else if (o instanceof String) {
+                    var.setSecretValue(Secret.fromString((String)o));
+                    var.setHidden(true);
+                }
+                else if (o instanceof Secret) {
+                    var.setSecretValue((Secret)o);
+                    var.setHidden(true);
                 }
                 extraVarList.add(var);
             }
